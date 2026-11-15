@@ -45,3 +45,43 @@ def compute_excess_returns(prices, rf):
     excess = returns.sub(rf, axis = 0)
 
     return excess.dropna()
+
+def summary_stats(returns, periods_per_year = 12):
+    """
+    Annualized summary statistics for a set of excess return series.
+
+    Parameters
+    ----------
+
+    returns: pd.DataFrame
+        Periodic (e.g. monthly) simple excess returns, one column per asset.
+
+    periods_per_year: int, default 12
+        Number of periods in a year (12 for monthly data).
+
+    
+    Returns
+    -------
+
+    pd.DataFrame
+        One row per asset with columns:
+        - Annualized Mean: mean * periods_per_year
+        - Annualized Volatility: std * sqrt(periods_per_year)
+        - Annualized Sharpe: Annualized Mean / Annualized Volatility (no rf subtracted: inputs are already in excess return)
+        - Skewness: sample skewness
+        - Kurtosis: sample excess kurtosis (normal distribution = 0)
+    
+    """
+
+    ann_mean = returns.mean() * periods_per_year
+    ann_vol = returns.std() * np.sqrt(periods_per_year)
+
+    stats = pd.DataFrame({
+        "Annualized Mean": ann_mean,
+        "Annualized Volatility": ann_vol,
+        "Annualized Sharpe": ann_mean / ann_vol,
+        "Skewness": returns.skew(),
+        "Kurtosis": returns.kurt()
+    })
+
+    return stats
