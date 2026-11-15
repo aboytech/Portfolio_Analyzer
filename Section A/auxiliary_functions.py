@@ -85,3 +85,40 @@ def summary_stats(returns, periods_per_year = 12):
     })
 
     return stats
+
+def benchmark_forecast(returns, window = 252, oos_start = "2001-01"):
+    """
+    Rolling-window historical mean (benchmark) forecast of excess returns.
+
+    The forecast for month 't' is the mean of the previous 'window' months (t - window to t - 1), so it only uses information available before t.
+
+    Parameters
+    ----------
+
+    returns: pd.DataFrame
+        Monthly simple excess returns, one column per asset, indexed by monthly period.
+
+    window: int, default 252
+        Number of past months in each rolling estimate (252 = Jan 1980 - Dec 2000 in-sample period).
+
+    oos_start: str, default '2001-01'
+        First out-of-sample month to forecast.
+
+    
+    Returns
+    -------
+
+    pd.DataFrame
+        Monthly benchmark forecasts, indexed by the month being forecast.
+    
+    """
+
+    # Mean of the last 'window' months, including the current month
+    rolling_mean = returns.rolling(window).mean()
+
+    # Shift by one month: the forecast for t uses data up to t - 1 only (no look-ahead)
+    forecast = rolling_mean.shift(1)
+
+    # keep only the out-of-sample period
+    return forecast.loc[oos_start:]
+
